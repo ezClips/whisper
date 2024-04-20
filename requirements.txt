@@ -1,5 +1,4 @@
 #numba
-dtw-python
 numpy
 torch
 tqdm

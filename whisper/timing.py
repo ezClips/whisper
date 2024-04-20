@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, List
 
 #import numba
-import dtw as dtwlib
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -57,32 +56,35 @@ def median_filter(x: torch.Tensor, filter_width: int):
 
 #@numba.jit(nopython=True)
 def backtrace(trace: np.ndarray):
-    i = trace.shape[0] - 1
-    j = trace.shape[1] - 1
     trace[0, :] = 2
     trace[:, 0] = 1
 
+    i, j = trace.shape[0] - 1, trace.shape[1] - 1
     result = []
+
     while i > 0 or j > 0:
-        result.append((i - 1, j - 1))
+        result.append((i-1, j-1))
+        t = trace[i, j]
+        i -= t != 2
+        j -= t != 1
 
-        if trace[i, j] == 0:
-            i -= 1
-            j -= 1
-        elif trace[i, j] == 1:
-            i -= 1
-        elif trace[i, j] == 2:
-            j -= 1
-        else:
-            raise ValueError("Unexpected trace[i, j]")
+    return np.array(result)[::-1].T
 
-    result = np.array(result)
-    return result[::-1, :].T
-
-#@numba.jit(nopython=True, parallel=True)
+#@numba.jit(nopython=True)
 def dtw_cpu(x: np.ndarray):
-    result = dtwlib.dtw(x)
-    return result.index1s, result.index2s
+    N, M = x.shape
+    cost = np.full((N + 1, M + 1), np.inf, dtype=np.float32)
+    trace = np.full((N + 1, M + 1), -1, dtype=np.float32)
+    cost[0, 0] = 0.0
+
+    for i in range(1, N + 1):
+        for j in range(1, M + 1):
+            choices = cost[i - 1, j - 1], cost[i - 1, j], cost[i, j - 1]
+            min_cost = min(choices)
+            trace[i, j] = np.argmin(choices)
+            cost[i, j] = x[i - 1, j - 1] + min_cost
+
+    return backtrace(trace)
 
 def dtw_cuda(x, BLOCK_SIZE=1024):
     from .triton_ops import dtw_kernel
