@@ -6,7 +6,7 @@ import warnings
 from typing import List, Optional, Union
 
 import torch
-from tqdm import tqdm
+#from tqdm import tqdm
 
 from .audio import load_audio, log_mel_spectrogram, pad_or_trim
 from .decoding import DecodingOptions, DecodingResult, decode, detect_language
@@ -67,13 +67,14 @@ def _download(url: str, root: str, in_memory: bool) -> Union[bytes, str]:
             )
 
     with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
-        with tqdm(
-            total=int(source.info().get("Content-Length")),
-            ncols=80,
-            unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-        ) as loop:
+        #with tqdm(
+        #    total=int(source.info().get("Content-Length")),
+        #    ncols=80,
+        #    unit="iB",
+        #    unit_scale=True,
+        #    unit_divisor=1024,
+        #) as loop:
+        if True:
             while True:
                 buffer = source.read(8192)
                 if not buffer:

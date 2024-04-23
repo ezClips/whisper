@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-import tqdm
+#import tqdm
 
 from .audio import (
     FRAMES_PER_SECOND,
@@ -251,9 +251,10 @@ def transcribe(
         }
 
     # show the progress bar when verbose is False (if True, transcribed text will be printed)
-    with tqdm.tqdm(
-        total=content_frames, unit="frames", disable=verbose is not False
-    ) as pbar:
+    #with tqdm.tqdm(
+    #    total=content_frames, unit="frames", disable=verbose is not False
+    #) as pbar:
+    if True:
         last_speech_timestamp = 0.0
         # NOTE: This loop is obscurely flattened to make the diff readable.
         # A later commit should turn this into a simpler nested loop.
@@ -489,7 +490,7 @@ def transcribe(
                 prompt_reset_since = len(all_tokens)
 
             # update progress bar
-            pbar.update(min(content_frames, seek) - previous_seek)
+            # pbar.update(min(content_frames, seek) - previous_seek)
 
     return dict(
         text=tokenizer.decode(all_tokens[len(initial_prompt_tokens) :]),
