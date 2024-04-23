@@ -4,10 +4,37 @@ import re
 from fractions import Fraction
 from typing import Iterator, List, Match, Optional, Union
 
-from more_itertools import windowed
+#from more_itertools import windowed
 
 from .basic import remove_symbols_and_diacritics
 
+from collections import deque
+from itertools import chain, islice
+
+# https://github.com/more-itertools/more-itertools/blob/7b5319da74ba371d6c21d57848caed399305616b/more_itertools/more.py#L815
+def windowed(seq, n, fillvalue=None, step=1):
+    if n < 0:
+        raise ValueError('n must be >= 0')
+    if n == 0:
+        yield ()
+        return
+    if step < 1:
+        raise ValueError('step must be >= 1')
+
+    iterable = iter(seq)
+    window = deque(islice(iterable, n), maxlen=n)
+
+    if not window:
+        return
+    if len(window) < n:
+        yield tuple(window) + ((fillvalue,) * (n - len(window)))
+        return
+    yield tuple(window)
+
+    padding = (fillvalue,) * (n - 1 if step >= n else step - 1)
+    filler = map(window.append, chain(iterable, padding))
+    for _ in islice(filler, step - 1, None, step):
+        yield tuple(window)
 
 class EnglishNumberNormalizer:
     """
