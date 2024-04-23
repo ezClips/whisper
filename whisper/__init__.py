@@ -81,7 +81,7 @@ def _download(url: str, root: str, in_memory: bool) -> Union[bytes, str]:
                     break
 
                 output.write(buffer)
-                loop.update(len(buffer))
+                #loop.update(len(buffer))
 
     model_bytes = open(download_target, "rb").read()
     if hashlib.sha256(model_bytes).hexdigest() != expected_sha256:
